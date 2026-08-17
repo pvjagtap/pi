@@ -148,10 +148,6 @@ const COPILOT_STATIC_HEADERS = {
 	"Copilot-Integration-Id": "vscode-chat",
 } as const;
 
-const KIMI_STATIC_HEADERS = {
-	"User-Agent": "KimiCLI/1.5",
-} as const;
-
 const TOGETHER_BASE_URL = "https://api.together.ai/v1";
 const TOGETHER_BASE_COMPAT: OpenAICompletionsCompat = {
 	supportsStore: false,
@@ -267,6 +263,10 @@ const DEEPSEEK_V4_THINKING_LEVEL_MAP = {
 	high: "high",
 	max: "max",
 } as const;
+const DEEPSEEK_V4_FLASH_THINKING_LEVEL_MAP = {
+	...DEEPSEEK_V4_THINKING_LEVEL_MAP,
+	low: "low",
+} as const;
 const QWEN_TOKEN_PLAN_HIGH_MAX_THINKING_LEVEL_MAP = {
 	minimal: null,
 	low: null,
@@ -351,6 +351,12 @@ const OPENAI_TOOL_SEARCH_MODEL_IDS = new Set([
 	"gpt-5.6-terra",
 	"gpt-5.6-luna",
 ]);
+// Public OpenAI documents additional_tools for applications that load tools
+// outside the normal tool-search flow. Codex currently uses the input item for
+// its Responses Lite GPT-5.6 models.
+// https://developers.openai.com/api/docs/guides/tools-tool-search#add-tools-at-a-specific-point-in-the-input
+const OPENAI_ADDITIONAL_TOOLS_MODEL_IDS = OPENAI_TOOL_SEARCH_MODEL_IDS;
+const OPENAI_CODEX_ADDITIONAL_TOOLS_MODEL_IDS = new Set(["gpt-5.6-sol", "gpt-5.6-terra", "gpt-5.6-luna"]);
 const OPENAI_LONG_CONTEXT_INPUT_THRESHOLD = 272000;
 const OPENAI_SHORT_CONTEXT_CAPPED_MODEL_IDS = new Set([
 	"gpt-5.4",
@@ -404,7 +410,6 @@ const OPENAI_RESPONSES_NONE_REASONING_MODELS = new Set([
 	"gpt-5.6-terra",
 	"gpt-5.6-luna",
 ]);
-const XAI_RESPONSES_MODEL_ID = "grok-4.5";
 const XAI_BUILTIN_EXCLUDED_MODEL_IDS = new Set([
 	"grok-3",
 	"grok-3-fast",
@@ -412,10 +417,6 @@ const XAI_BUILTIN_EXCLUDED_MODEL_IDS = new Set([
 	"grok-4.20-0309-reasoning",
 	"grok-code-fast-1",
 ]);
-const XAI_RESPONSES_EFFORT_LEVEL_MAP = {
-	off: null,
-	minimal: null,
-} as const;
 const XAI_RESPONSES_COMPAT: OpenAIResponsesCompat = {
 	supportsLongCacheRetention: false,
 };
@@ -619,6 +620,7 @@ function detectOpenAICompletionsCompat(model: Model<"openai-completions">): Open
 	const isNvidia = provider === "nvidia" || baseUrl.includes("integrate.api.nvidia.com");
 	const isAntLing = provider === "ant-ling" || baseUrl.includes("api.ant-ling.com");
 	const isTogetherReasoningOnly = isTogether && TOGETHER_REASONING_ONLY_MODELS.has(model.id);
+	const isDeepSeek = provider === "deepseek" || baseUrl.toLowerCase().includes("deepseek.com");
 
 	const isNonStandard =
 		isNvidia ||
@@ -628,7 +630,7 @@ function detectOpenAICompletionsCompat(model: Model<"openai-completions">): Open
 		baseUrl.includes("api.x.ai") ||
 		isTogether ||
 		baseUrl.includes("chutes.ai") ||
-		baseUrl.includes("deepseek.com") ||
+		isDeepSeek ||
 		isZai ||
 		isMoonshot ||
 		provider === "opencode" ||
@@ -638,10 +640,16 @@ function detectOpenAICompletionsCompat(model: Model<"openai-completions">): Open
 		isAntLing;
 
 	const useMaxTokens =
-		baseUrl.includes("chutes.ai") || isMoonshot || isCloudflareAiGateway || isTogether || isNvidia || isAntLing || isZai;
+		baseUrl.includes("chutes.ai") ||
+		isDeepSeek ||
+		isMoonshot ||
+		isCloudflareAiGateway ||
+		isTogether ||
+		isNvidia ||
+		isAntLing ||
+		isZai;
 
 	const isGrok = provider === "xai" || baseUrl.includes("api.x.ai");
-	const isDeepSeek = provider === "deepseek" || baseUrl.includes("deepseek.com");
 	const isOpenRouterDeveloperRoleModel =
 		isOpenRouter && (model.id.startsWith("anthropic/") || model.id.startsWith("openai/"));
 	const cacheControlFormat =
@@ -719,7 +727,10 @@ function applyOpenAICompletionsCompatMetadata(model: Model<Api>): void {
 }
 
 function applyStrictToolCompatMetadata(model: Model<Api>): void {
-	if (model.provider === "openai" && model.api === "openai-responses") {
+	if (
+		(model.provider === "openai" || model.provider === "cloudflare-ai-gateway") &&
+		model.api === "openai-responses"
+	) {
 		model.compat = { ...(model.compat as OpenAIResponsesCompat | undefined), supportsStrictMode: true };
 	} else if (model.provider === "anthropic" && model.api === "anthropic-messages") {
 		mergeAnthropicMessagesCompat(model, { supportsStrictTools: true });
@@ -755,8 +766,12 @@ function applyOpenAIToolSearchMetadata(model: Model<Api>): void {
 	const isOpenAIResponses = model.provider === "openai" && model.api === "openai-responses";
 	const isOpenAICodex = model.provider === "openai-codex" && model.api === "openai-codex-responses";
 	if (!(isOpenAIResponses || isOpenAICodex) || !OPENAI_TOOL_SEARCH_MODEL_IDS.has(model.id)) return;
+	const supportsAdditionalTools =
+		(isOpenAIResponses && OPENAI_ADDITIONAL_TOOLS_MODEL_IDS.has(model.id)) ||
+		(isOpenAICodex && OPENAI_CODEX_ADDITIONAL_TOOLS_MODEL_IDS.has(model.id));
 	model.compat = {
 		...(model.compat as OpenAIResponsesCompat | undefined),
+		...(supportsAdditionalTools ? { supportsAdditionalTools: true } : {}),
 		supportsToolSearch: true,
 	};
 }
@@ -803,8 +818,10 @@ function applyThinkingLevelMetadata(model: Model<any>): void {
 	) {
 		mergeThinkingLevelMap(model, { off: "none" });
 	}
-	if (model.provider === "xai" && model.api === "openai-responses" && model.id === XAI_RESPONSES_MODEL_ID) {
-		mergeThinkingLevelMap(model, XAI_RESPONSES_EFFORT_LEVEL_MAP);
+	// xAI models without verified effort options (e.g. grok-build-0.1) must not
+	// send the undocumented "none"/"minimal" efforts.
+	if (model.provider === "xai" && model.api === "openai-responses" && model.thinkingLevelMap === undefined) {
+		mergeThinkingLevelMap(model, { off: null, minimal: null });
 	}
 	if (supportsOpenAiXhigh(model.id)) {
 		mergeThinkingLevelMap(model, { xhigh: "xhigh" });
@@ -855,7 +872,9 @@ function applyThinkingLevelMetadata(model: Model<any>): void {
 			model,
 			model.provider === "openrouter"
 				? { ...DEEPSEEK_V4_THINKING_LEVEL_MAP, xhigh: "xhigh", max: null }
-				: DEEPSEEK_V4_THINKING_LEVEL_MAP,
+				: model.provider === "deepseek" && model.id === "deepseek-v4-flash"
+					? DEEPSEEK_V4_FLASH_THINKING_LEVEL_MAP
+					: DEEPSEEK_V4_THINKING_LEVEL_MAP,
 		);
 	}
 	if (isGoogleThinkingApi(model) && isGemini3ProModel(model.id)) {
@@ -1610,15 +1629,14 @@ async function loadModelsDevData(): Promise<Model<any>[]> {
 			for (const [modelId, model] of Object.entries(data.xai.models)) {
 				const m = model as ModelsDevModel;
 				if (m.tool_call !== true) continue;
-				const useResponsesApi = modelId === XAI_RESPONSES_MODEL_ID;
 
 				models.push({
 					id: modelId,
 					name: m.name || modelId,
-					api: useResponsesApi ? "openai-responses" : "openai-completions",
+					api: "openai-responses",
 					provider: "xai",
 					baseUrl: "https://api.x.ai/v1",
-					...(useResponsesApi ? { compat: { ...XAI_RESPONSES_COMPAT } } : {}),
+					compat: { ...XAI_RESPONSES_COMPAT },
 					reasoning: m.reasoning === true,
 					input: m.modalities?.input?.includes("image") ? ["text", "image"] : ["text"],
 					cost: {
@@ -1924,10 +1942,10 @@ async function loadModelsDevData(): Promise<Model<any>[]> {
 
 				// Claude 4.x and 5.x models route to Anthropic Messages API
 				const isCopilotClaude = /^claude-(haiku|sonnet|opus)-[45]([.\-]|$)/.test(modelId);
-				// Grok 4.5, gpt-5, oswe, and MAI-Code models are only served through
+				// Grok, gpt-5, oswe, and MAI-Code models are only served through
 				// the Copilot /responses endpoint.
 				const needsResponsesApi =
-					modelId === "grok-4.5" ||
+					modelId.startsWith("grok-") ||
 					modelId.startsWith("gpt-5") ||
 					modelId.startsWith("oswe") ||
 					modelId.startsWith("mai-");
@@ -2031,7 +2049,6 @@ async function loadModelsDevData(): Promise<Model<any>[]> {
 					provider: "kimi-coding",
 					// Kimi For Coding's Anthropic-compatible API - SDK appends /v1/messages
 					baseUrl: "https://api.kimi.com/coding",
-					headers: { ...KIMI_STATIC_HEADERS },
 					compat: {
 						...(allowEmptySignature ? { allowEmptySignature: true } : {}),
 						forceAdaptiveThinking: true,
