@@ -2,7 +2,13 @@
 // Do not edit manually - run 'npm run generate-models' to update
 
 import values from "./data/azure-anthropic-foundry.json" with { type: "json" };
-import { flattenModelCatalog, type ModelCatalog } from "../model-catalog.ts";
+import { flattenChatModelCatalog, flattenClassifierModelCatalog, flattenImageModelCatalog, type ChatModelCatalog, type ClassifierModelCatalog, type ImageModelCatalog } from "../model-catalog.ts";
 
-export const AZURE_ANTHROPIC_FOUNDRY_MODELS: ModelCatalog<typeof values, "azure-anthropic-foundry"> =
-	flattenModelCatalog("azure-anthropic-foundry", values);
+export const AZURE_ANTHROPIC_FOUNDRY_MODELS: ChatModelCatalog<typeof values, "azure-anthropic-foundry"> =
+	flattenChatModelCatalog("azure-anthropic-foundry", values);
+
+export const AZURE_ANTHROPIC_FOUNDRY_IMAGE_MODELS: ImageModelCatalog<typeof values, "azure-anthropic-foundry"> =
+	flattenImageModelCatalog("azure-anthropic-foundry", values);
+
+export const AZURE_ANTHROPIC_FOUNDRY_CLASSIFIER_MODELS: ClassifierModelCatalog<typeof values, "azure-anthropic-foundry"> =
+	flattenClassifierModelCatalog("azure-anthropic-foundry", values);

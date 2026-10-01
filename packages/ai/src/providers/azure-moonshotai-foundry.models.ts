@@ -2,7 +2,13 @@
 // Do not edit manually - run 'npm run generate-models' to update
 
 import values from "./data/azure-moonshotai-foundry.json" with { type: "json" };
-import { flattenModelCatalog, type ModelCatalog } from "../model-catalog.ts";
+import { flattenChatModelCatalog, flattenClassifierModelCatalog, flattenImageModelCatalog, type ChatModelCatalog, type ClassifierModelCatalog, type ImageModelCatalog } from "../model-catalog.ts";
 
-export const AZURE_MOONSHOTAI_FOUNDRY_MODELS: ModelCatalog<typeof values, "azure-moonshotai-foundry"> =
-	flattenModelCatalog("azure-moonshotai-foundry", values);
+export const AZURE_MOONSHOTAI_FOUNDRY_MODELS: ChatModelCatalog<typeof values, "azure-moonshotai-foundry"> =
+	flattenChatModelCatalog("azure-moonshotai-foundry", values);
+
+export const AZURE_MOONSHOTAI_FOUNDRY_IMAGE_MODELS: ImageModelCatalog<typeof values, "azure-moonshotai-foundry"> =
+	flattenImageModelCatalog("azure-moonshotai-foundry", values);
+
+export const AZURE_MOONSHOTAI_FOUNDRY_CLASSIFIER_MODELS: ClassifierModelCatalog<typeof values, "azure-moonshotai-foundry"> =
+	flattenClassifierModelCatalog("azure-moonshotai-foundry", values);
