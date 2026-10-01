@@ -5,6 +5,7 @@ import { AMAZON_BEDROCK_MODELS } from "./providers/amazon-bedrock.models.ts";
 import { ANT_LING_MODELS } from "./providers/ant-ling.models.ts";
 import { ANTHROPIC_MODELS } from "./providers/anthropic.models.ts";
 import { AZURE_ANTHROPIC_FOUNDRY_MODELS } from "./providers/azure-anthropic-foundry.models.ts";
+import { AZURE_MOONSHOTAI_FOUNDRY_MODELS } from "./providers/azure-moonshotai-foundry.models.ts";
 import { AZURE_OPENAI_RESPONSES_MODELS } from "./providers/azure-openai-responses.models.ts";
 import { BASETEN_MODELS } from "./providers/baseten.models.ts";
 import { CEREBRAS_MODELS } from "./providers/cerebras.models.ts";
@@ -47,6 +48,7 @@ export const MODELS: {
 	readonly "ant-ling": typeof ANT_LING_MODELS;
 	readonly "anthropic": typeof ANTHROPIC_MODELS;
 	readonly "azure-anthropic-foundry": typeof AZURE_ANTHROPIC_FOUNDRY_MODELS;
+	readonly "azure-moonshotai-foundry": typeof AZURE_MOONSHOTAI_FOUNDRY_MODELS;
 	readonly "azure-openai-responses": typeof AZURE_OPENAI_RESPONSES_MODELS;
 	readonly "baseten": typeof BASETEN_MODELS;
 	readonly "cerebras": typeof CEREBRAS_MODELS;
@@ -88,6 +90,7 @@ export const MODELS: {
 	"ant-ling": ANT_LING_MODELS,
 	"anthropic": ANTHROPIC_MODELS,
 	"azure-anthropic-foundry": AZURE_ANTHROPIC_FOUNDRY_MODELS,
+	"azure-moonshotai-foundry": AZURE_MOONSHOTAI_FOUNDRY_MODELS,
 	"azure-openai-responses": AZURE_OPENAI_RESPONSES_MODELS,
 	"baseten": BASETEN_MODELS,
 	"cerebras": CEREBRAS_MODELS,

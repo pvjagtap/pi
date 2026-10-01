@@ -780,9 +780,17 @@ function createClient(
 		Object.assign(headers, optionsHeaders);
 	}
 
+	// Azure AI Foundry base URLs carry `?api-version=...`. The OpenAI client
+	// concatenates baseURL + path, so a query on the base would corrupt the URL;
+	// move it to defaultQuery instead.
+	const parsedBaseUrl = URL.parse(model.baseUrl);
+	const baseQuery = parsedBaseUrl ? Object.fromEntries(parsedBaseUrl.searchParams) : {};
+	if (parsedBaseUrl) parsedBaseUrl.search = "";
+
 	return new OpenAI({
 		apiKey,
-		baseURL: model.baseUrl,
+		baseURL: parsedBaseUrl ? parsedBaseUrl.toString() : model.baseUrl,
+		defaultQuery: Object.keys(baseQuery).length > 0 ? baseQuery : undefined,
 		dangerouslyAllowBrowser: true,
 		fetch,
 		defaultHeaders: headers,

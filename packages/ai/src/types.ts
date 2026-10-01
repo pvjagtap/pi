@@ -37,6 +37,7 @@ export type KnownProvider =
 	| "ant-ling"
 	| "anthropic"
 	| "azure-anthropic-foundry"
+	| "azure-moonshotai-foundry"
 	| "google"
 	| "google-vertex"
 	| "openai"

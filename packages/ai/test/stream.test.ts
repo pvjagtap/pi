@@ -12,6 +12,7 @@ type StreamOptionsWithExtras = StreamOptions & Record<string, unknown>;
 import { StringEnum } from "../src/utils/typebox-helpers.ts";
 import {
 	hasAzureAnthropicFoundryCredentials,
+	hasAzureMoonshotaiFoundryCredentials,
 	hasAzureOpenAICredentials,
 	resolveAzureDeploymentName,
 } from "./azure-utils.ts";
@@ -520,6 +521,25 @@ describe("Generate E2E Tests", () => {
 			await handleImage(model);
 		});
 	});
+
+	describe.skipIf(!hasAzureMoonshotaiFoundryCredentials())(
+		"Azure AI Foundry Moonshot Provider (Kimi-K2.7-Code)",
+		() => {
+			const model = getModel("azure-moonshotai-foundry", "Kimi-K2.7-Code");
+
+			it("should complete basic text generation", { retry: 3 }, async () => {
+				await basicTextGeneration(model);
+			});
+
+			it("should handle tool calling", { retry: 3 }, async () => {
+				await handleToolCall(model);
+			});
+
+			it("should handle streaming", { retry: 3 }, async () => {
+				await handleStreaming(model);
+			});
+		},
+	);
 
 	describe.skipIf(!hasAzureAnthropicFoundryCredentials())(
 		"Azure AI Foundry Anthropic Provider (claude-haiku-4-5)",

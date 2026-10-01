@@ -6,6 +6,7 @@ import { amazonBedrockProvider } from "./amazon-bedrock.ts";
 import { antLingProvider } from "./ant-ling.ts";
 import { anthropicProvider } from "./anthropic.ts";
 import { azureAnthropicFoundryProvider } from "./azure-anthropic-foundry.ts";
+import { azureMoonshotaiFoundryProvider } from "./azure-moonshotai-foundry.ts";
 import { azureOpenAIResponsesProvider } from "./azure-openai-responses.ts";
 import { basetenProvider } from "./baseten.ts";
 import { cerebrasProvider } from "./cerebras.ts";
@@ -93,6 +94,7 @@ export function builtinProviders(): Provider[] {
 		antLingProvider(),
 		anthropicProvider(),
 		azureAnthropicFoundryProvider(),
+		azureMoonshotaiFoundryProvider(),
 		azureOpenAIResponsesProvider(),
 		basetenProvider(),
 		cerebrasProvider(),

@@ -27,6 +27,12 @@ export function hasAzureAnthropicFoundryCredentials(): boolean {
 	return hasKey && hasEndpoint;
 }
 
+export function hasAzureMoonshotaiFoundryCredentials(): boolean {
+	const hasKey = !!process.env.KIMI_FOUNDRY_API_KEY;
+	const hasEndpoint = !!(process.env.KIMI_FOUNDRY_BASE_URL || process.env.KIMI_FOUNDRY_RESOURCE);
+	return hasKey && hasEndpoint;
+}
+
 export function resolveAzureDeploymentName(modelId: string): string | undefined {
 	const mapValue = process.env.AZURE_OPENAI_DEPLOYMENT_NAME_MAP;
 	if (!mapValue) return undefined;

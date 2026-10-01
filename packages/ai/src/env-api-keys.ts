@@ -82,6 +82,8 @@ function getApiKeyEnvVars(provider: string): readonly string[] | undefined {
 		"qwen-token-plan-cn": "QWEN_TOKEN_PLAN_CN_API_KEY",
 		"qwen-token-plan-individual": "QWEN_TOKEN_PLAN_API_KEY",
 		openai: "OPENAI_API_KEY",
+		"azure-anthropic-foundry": "ANTHROPIC_FOUNDRY_API_KEY",
+		"azure-moonshotai-foundry": "KIMI_FOUNDRY_API_KEY",
 		"azure-openai-responses": "AZURE_OPENAI_API_KEY",
 		nvidia: "NVIDIA_API_KEY",
 		deepseek: "DEEPSEEK_API_KEY",

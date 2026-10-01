@@ -2982,6 +2982,27 @@ async function generateModels() {
 		}
 	}
 
+	// Mirror Moonshot models as azure-moonshotai-foundry entries. Azure AI Foundry
+	// hosts Kimi behind `/models/chat/completions?api-version=...`; baseUrl is
+	// resolved per-request from KIMI_FOUNDRY_RESOURCE / KIMI_FOUNDRY_BASE_URL.
+	if (providers.moonshotai) {
+		providers["azure-moonshotai-foundry"] = {};
+		for (const model of Object.values(providers.moonshotai)) {
+			// Azure deployments are named in title case (kimi-k2.7-code -> Kimi-K2.7-Code),
+			// and the request body's `model` must match the deployment name.
+			const id = model.id
+				.split("-")
+				.map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+				.join("-");
+			providers["azure-moonshotai-foundry"][id] = {
+				...model,
+				id,
+				provider: "azure-moonshotai-foundry",
+				baseUrl: "",
+			} as Model<any>;
+		}
+	}
+
 	const sortedProviderIds = Object.keys(providers).sort();
 	const jsonProviders: Record<string, Record<string, Model<any>>> = {};
 	for (const providerId of sortedProviderIds) {
