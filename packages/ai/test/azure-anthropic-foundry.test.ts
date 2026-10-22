@@ -130,6 +130,16 @@ describe("azure-anthropic-foundry", () => {
 		);
 	});
 
+	// getAvailable() checks every provider together; a Foundry key without an endpoint
+	// must not reject the whole listing, only requests to this provider.
+	it("lists models when the key is set but the endpoint is not", async () => {
+		process.env.ANTHROPIC_FOUNDRY_API_KEY = "test-key";
+
+		const available = await models().getAvailable();
+
+		expect(available.some((model) => model.provider === "azure-anthropic-foundry")).toBe(true);
+	});
+
 	// Prompt caching is what makes this provider affordable; the mirrored catalog must
 	// carry the same cache metadata as native Anthropic or every request is billed full price.
 	it("mirrors prompt cache lifetimes and cache pricing from Anthropic", () => {

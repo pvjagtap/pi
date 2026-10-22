@@ -3440,7 +3440,7 @@ async function generateModels() {
 	}
 
 	// Mirror Moonshot models as azure-moonshotai-foundry entries. Azure AI Foundry
-	// hosts Kimi behind `/models/chat/completions?api-version=...`; baseUrl is
+	// hosts Kimi behind its OpenAI-compatible `/openai/v1/` endpoint; baseUrl is
 	// resolved per-request from KIMI_FOUNDRY_RESOURCE / KIMI_FOUNDRY_BASE_URL.
 	if (providers.moonshotai) {
 		providers["azure-moonshotai-foundry"] ??= { chat: {}, image: {}, classifier: {} };
