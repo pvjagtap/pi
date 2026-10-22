@@ -101,6 +101,30 @@ describe("azure-moonshotai-foundry", () => {
 		expect(requested).toBe("https://my-resource.services.ai.azure.com/openai/v1/chat/completions");
 	});
 
+	// Azure rejects the `thinking` field with 400 "Unrecognized request argument supplied: thinking".
+	it("sends no thinking parameter when reasoning is requested", async () => {
+		const model = models().getModel("azure-moonshotai-foundry", "Kimi-K2.7-Code") as Model<"openai-completions">;
+		let body: Record<string, unknown> | undefined;
+		const fetch: typeof globalThis.fetch = async (input, init) => {
+			const raw = input instanceof Request ? await input.text() : String(init?.body);
+			body = JSON.parse(raw) as Record<string, unknown>;
+			return new Response("boom", { status: 500 });
+		};
+
+		const events = stream(
+			{ ...model, baseUrl: "https://my-resource.services.ai.azure.com/openai/v1/" },
+			normalizeContext({ messages: [{ role: "user", content: "hi", timestamp: 0 }] }),
+			{ apiKey: "test-key", fetch, maxRetries: 0, reasoningEffort: "high" },
+		);
+		for await (const _event of events) {
+			// drain until the request fails
+		}
+
+		expect(body).toBeDefined();
+		expect(body).not.toHaveProperty("thinking");
+		expect(body).not.toHaveProperty("reasoning_effort");
+	});
+
 	it("rejects when no endpoint is configured", async () => {
 		process.env.KIMI_FOUNDRY_API_KEY = "test-key";
 

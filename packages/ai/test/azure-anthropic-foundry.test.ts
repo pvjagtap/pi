@@ -155,6 +155,18 @@ describe("azure-anthropic-foundry", () => {
 		expect(foundry.cost.cacheRead).toBeGreaterThan(0);
 	});
 
+	// Anthropic may answer with an allowed fallback model; its price is looked up by provider,
+	// so mirrored fallbacks must name this provider or the response is billed at the wrong rate.
+	it("points mirrored fallback models at the Foundry provider", () => {
+		const fallbacks = models()
+			.getProvider("azure-anthropic-foundry")
+			?.getModels()
+			.flatMap((model) => (model as Model<"anthropic-messages">).compat?.allowedFallbackModels ?? []);
+
+		expect(fallbacks?.length).toBeGreaterThan(0);
+		for (const fallback of fallbacks ?? []) expect(fallback.provider).toBe("azure-anthropic-foundry");
+	});
+
 	it("sets cache breakpoints on system, tools, and conversation", async () => {
 		const payload = await capturePayload({ cacheRetention: "short" });
 

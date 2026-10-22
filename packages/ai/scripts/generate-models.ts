@@ -3431,11 +3431,19 @@ async function generateModels() {
 	if (providers.anthropic) {
 		providers["azure-anthropic-foundry"] ??= { chat: {}, image: {}, classifier: {} };
 		for (const [id, model] of Object.entries(providers.anthropic.chat)) {
-			providers["azure-anthropic-foundry"].chat[id] = {
-				...model,
-				provider: "azure-anthropic-foundry",
-				baseUrl: "",
-			} as Model<Api>;
+			const foundryModel = { ...model, provider: "azure-anthropic-foundry", baseUrl: "" } as Model<Api>;
+			// Fallback pricing is matched by provider; keep it pointing at this provider.
+			const compat = model.compat as AnthropicMessagesCompat | undefined;
+			if (compat?.allowedFallbackModels) {
+				foundryModel.compat = {
+					...compat,
+					allowedFallbackModels: compat.allowedFallbackModels.map((fallback) => ({
+						...fallback,
+						provider: "azure-anthropic-foundry",
+					})),
+				};
+			}
+			providers["azure-anthropic-foundry"].chat[id] = foundryModel;
 		}
 	}
 
@@ -3451,12 +3459,16 @@ async function generateModels() {
 				.split("-")
 				.map((part) => part.charAt(0).toUpperCase() + part.slice(1))
 				.join("-");
-			providers["azure-moonshotai-foundry"].chat[id] = {
-				...model,
-				id,
-				provider: "azure-moonshotai-foundry",
-				baseUrl: "",
-			} as Model<Api>;
+			const foundryModel = { ...model, id, provider: "azure-moonshotai-foundry", baseUrl: "" } as Model<Api>;
+			// Azure 400s on the `thinking` field ("Unrecognized request argument supplied: thinking",
+			// verified 2026-10-22), so DeepSeek-style thinking control cannot be sent. Kimi thinks
+			// by default, so send no thinking parameter and stop offering "off".
+			const compat = model.compat as OpenAICompletionsCompat | undefined;
+			if (compat?.thinkingFormat === "deepseek") {
+				foundryModel.compat = { ...compat, thinkingFormat: "openai", supportsReasoningEffort: false };
+				foundryModel.thinkingLevelMap = { ...model.thinkingLevelMap, off: null };
+			}
+			providers["azure-moonshotai-foundry"].chat[id] = foundryModel;
 		}
 	}
 
