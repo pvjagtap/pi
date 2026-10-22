@@ -93,6 +93,8 @@ describe("azure-anthropic-foundry", () => {
 
 		expect(auth?.auth.baseUrl).toBe("https://my-resource.services.ai.azure.com/anthropic/");
 		expect(auth?.source).toBe("ANTHROPIC_FOUNDRY_API_KEY");
+		// Model refreshes list deployments from this env value; a resource name alone must still reach it.
+		expect(auth?.env?.ANTHROPIC_FOUNDRY_BASE_URL).toBe("https://my-resource.services.ai.azure.com/anthropic/");
 	});
 
 	it("prefers an explicit base URL and normalizes the trailing slash", async () => {

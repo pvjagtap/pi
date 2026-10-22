@@ -1,4 +1,5 @@
 import type { ApiKeyAuth } from "../auth/types.ts";
+import { azureDeploymentCatalog } from "./azure-deployments.ts";
 
 export interface AzureFoundryAuthConfig {
 	/** Env var holding the Foundry key, e.g. `ANTHROPIC_FOUNDRY_API_KEY`. */
@@ -61,8 +62,18 @@ export function azureFoundryApiKeyAuth(config: AzureFoundryAuthConfig): ApiKeyAu
 
 			return {
 				auth: { apiKey, baseUrl: resolved, headers: { "api-key": apiKey } },
+				// Model refreshes see only the credential and its env, so they need the endpoint here.
+				env: { ...credential?.env, [config.baseUrlEnv]: resolved },
 				source: credential?.key ? "stored credential" : config.apiKeyEnv,
 			};
 		},
 	};
+}
+
+/** Keep only the Foundry models deployed on the resource that `azureFoundryApiKeyAuth(config)` resolves. */
+export function azureFoundryDeploymentCatalog(config: AzureFoundryAuthConfig) {
+	return azureDeploymentCatalog({
+		baseUrl: (context) =>
+			context.credential?.type === "api_key" ? context.credential.env?.[config.baseUrlEnv] : undefined,
+	});
 }

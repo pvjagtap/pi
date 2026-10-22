@@ -196,6 +196,12 @@ export KIMI_FOUNDRY_RESOURCE=your-resource
 
 Pi sends the model ID as the deployment name, for example `azure-anthropic-foundry/claude-opus-4-8` or `azure-moonshotai-foundry/Kimi-K2.7-Code`, so deploy models under their default names. A key without an endpoint keeps the models listed; requests then fail with a message naming the missing variable.
 
+### Deployed models only
+
+For `azure`, `azure-anthropic-foundry`, and `azure-moonshotai-foundry`, Pi lists only the catalog models that have a succeeded deployment on your resource, so `/model` does not offer models that would fail with `DeploymentNotFound`. A `models.json` custom model is always listed. For `azure`, a model counts as deployed when its `AZURE_OPENAI_DEPLOYMENT_NAME_MAP` deployment exists.
+
+Pi reads the deployment list with the API key from `GET /openai/deployments?api-version=2022-12-01` when it refreshes model catalogs: at interactive startup, when `/model` opens, after `/login`, and on `pi update --models`. The last list is saved and used offline and in `pi -p`. If the resource rejects the request (401, 403, or 404), or before the first refresh, Pi lists the full catalog.
+
 ### Amazon Bedrock
 
 Bedrock can use a bearer token or an ambient AWS credential source:

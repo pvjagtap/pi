@@ -6,6 +6,7 @@ import { envApiKeyAuth } from "../auth/helpers.ts";
 import { createProvider, type Provider } from "../models.ts";
 import type { Api, Model, ProviderStreams, StreamOptions } from "../types.ts";
 import { AZURE_MODELS } from "./azure.models.ts";
+import { azureDeploymentCatalog } from "./azure-deployments.ts";
 
 function resolveAzureModel(model: Model<Api>, options: StreamOptions | undefined): Model<Api> {
 	return { ...model, baseUrl: resolveAzureBaseUrl(model, options) };
@@ -40,6 +41,26 @@ function azureStreams(streams: ProviderStreams): ProviderStreams {
 			),
 	};
 }
+
+/**
+ * Narrow the catalog to the deployments of the resource from `AZURE_OPENAI_BASE_URL` or
+ * `AZURE_OPENAI_RESOURCE_NAME`, honoring `AZURE_OPENAI_DEPLOYMENT_NAME_MAP`.
+ */
+export const personalizeAzureCatalog = azureDeploymentCatalog({
+	baseUrl: (context) => {
+		const env = context.credential?.type === "api_key" ? context.credential.env : undefined;
+		try {
+			return resolveAzureBaseUrl({ baseUrl: context.baseUrl ?? "" }, { env });
+		} catch {
+			// No endpoint configured: requests fail with the resolver's message; keep the catalog.
+			return undefined;
+		}
+	},
+	deploymentName: (model, context) =>
+		resolveDeploymentName(model, {
+			env: context.credential?.type === "api_key" ? context.credential.env : undefined,
+		}),
+});
 
 export function azureProvider(): Provider<"azure-openai-responses" | "openai-completions"> {
 	return createProvider({

@@ -58,6 +58,9 @@ import {
 	type StreamOptions,
 } from "@earendil-works/pi-ai";
 import * as builtinProviderCatalog from "@earendil-works/pi-ai/providers/all";
+import { personalizeAzureCatalog } from "@earendil-works/pi-ai/providers/azure";
+import { personalizeAzureAnthropicFoundryCatalog } from "@earendil-works/pi-ai/providers/azure-anthropic-foundry";
+import { personalizeAzureMoonshotaiFoundryCatalog } from "@earendil-works/pi-ai/providers/azure-moonshotai-foundry";
 import { personalizeOpenRouterCatalog } from "@earendil-works/pi-ai/providers/openrouter";
 import {
 	assertChatModel,
@@ -82,7 +85,7 @@ import {
 	resolveConfiguredModelHeaders,
 	validateExtensionProvider,
 } from "./provider-composer.ts";
-import { withPersonalizedCatalog, withRemoteCatalog } from "./remote-catalog-provider.ts";
+import { type PersonalizeCatalog, withPersonalizedCatalog, withRemoteCatalog } from "./remote-catalog-provider.ts";
 import { RuntimeCredentials } from "./runtime-credentials.ts";
 import {
 	createVirtualModel,
@@ -106,6 +109,17 @@ interface ModelRuntimeSnapshot {
 	storedProviders: ReadonlySet<string>;
 	auth: ReadonlyMap<string, AuthCheck | undefined>;
 }
+
+/**
+ * Built-in providers whose catalog is narrowed to what the user's credential can use: OpenRouter to
+ * the key's models, limits and prices; Azure providers to the resource's deployments.
+ */
+const PERSONALIZED_CATALOGS: Partial<Record<string, PersonalizeCatalog>> = {
+	openrouter: personalizeOpenRouterCatalog,
+	azure: personalizeAzureCatalog,
+	"azure-anthropic-foundry": personalizeAzureAnthropicFoundryCatalog,
+	"azure-moonshotai-foundry": personalizeAzureMoonshotaiFoundryCatalog,
+};
 
 export interface CreateModelRuntimeOptions {
 	/** Credential storage. Defaults to the file at authPath. */
@@ -232,14 +246,9 @@ export class ModelRuntime implements Models {
 		const builtinModelDataGeneratedAt = builtinProviderCatalog.getBuiltinModelDataGeneratedAt();
 		const providers = builtinProviderCatalog.builtinProviders().map((provider) => {
 			if (provider.id === "radius") return provider;
-			// OpenRouter narrows the catalog to the models, limits and prices of the user's key.
-			if (provider.id === "openrouter") {
-				return withPersonalizedCatalog(
-					provider,
-					personalizeOpenRouterCatalog,
-					options.catalogBaseUrl,
-					builtinModelDataGeneratedAt,
-				);
+			const personalize = PERSONALIZED_CATALOGS[provider.id];
+			if (personalize) {
+				return withPersonalizedCatalog(provider, personalize, options.catalogBaseUrl, builtinModelDataGeneratedAt);
 			}
 			return withRemoteCatalog(provider, options.catalogBaseUrl, builtinModelDataGeneratedAt);
 		});
