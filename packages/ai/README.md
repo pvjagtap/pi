@@ -493,6 +493,8 @@ Built-in providers resolve these env vars (Node.js; in browsers pass `apiKey` ex
 | OpenAI | `OPENAI_API_KEY` |
 | Ant Ling | `ANT_LING_API_KEY` |
 | Azure OpenAI | `AZURE_OPENAI_API_KEY` + `AZURE_OPENAI_BASE_URL` (e.g. `https://{resource}.ai.azure.com`) or `AZURE_OPENAI_RESOURCE_NAME`. Supports `*.openai.azure.com`, `*.cognitiveservices.azure.com` and `*.ai.azure.com`; root endpoints auto-normalize to `/openai/v1`. Optional: `AZURE_OPENAI_API_VERSION` (default `v1`), `AZURE_OPENAI_DEPLOYMENT_NAME_MAP`. |
+| Azure AI Foundry (Anthropic) | `ANTHROPIC_FOUNDRY_API_KEY` + `ANTHROPIC_FOUNDRY_RESOURCE` (endpoint `https://{resource}.services.ai.azure.com/anthropic/`) or `ANTHROPIC_FOUNDRY_BASE_URL`. Model IDs are sent as deployment names. |
+| Azure AI Foundry (Moonshot Kimi) | `KIMI_FOUNDRY_API_KEY` + `KIMI_FOUNDRY_RESOURCE` (endpoint `https://{resource}.services.ai.azure.com/openai/v1/`) or `KIMI_FOUNDRY_BASE_URL` (used verbatim; may carry `?api-version=...`). Model IDs (`Kimi-K2.7-Code`, ...) are sent as deployment names. |
 | Anthropic | `ANTHROPIC_API_KEY` or `ANTHROPIC_OAUTH_TOKEN` |
 | Radius | `RADIUS_API_KEY` |
 | TypeSafe | `TYPESAFE_API_KEY` |

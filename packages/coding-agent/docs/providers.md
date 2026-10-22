@@ -173,6 +173,29 @@ To use a Foundry model that Pi does not include, add it under `azure` in [`model
 }
 ```
 
+### Azure AI Foundry (Anthropic and Kimi)
+
+Two providers reach Claude and Kimi deployments in an Azure AI Foundry resource:
+
+| Provider ID | Models | Endpoint |
+|---|---|---|
+| `azure-anthropic-foundry` | Anthropic Claude, Anthropic Messages API | `https://<resource>.services.ai.azure.com/anthropic/` |
+| `azure-moonshotai-foundry` | Moonshot Kimi, Chat Completions | `https://<resource>.services.ai.azure.com/openai/v1/` |
+
+Set the key plus either the resource name or a full base URL:
+
+```bash
+export ANTHROPIC_FOUNDRY_API_KEY=...
+export ANTHROPIC_FOUNDRY_RESOURCE=your-resource
+# Or: export ANTHROPIC_FOUNDRY_BASE_URL=https://your-resource.services.ai.azure.com/anthropic
+
+export KIMI_FOUNDRY_API_KEY=...
+export KIMI_FOUNDRY_RESOURCE=your-resource
+# Or: export KIMI_FOUNDRY_BASE_URL=https://your-resource.services.ai.azure.com/openai/v1/
+```
+
+Pi sends the model ID as the deployment name, for example `azure-anthropic-foundry/claude-opus-4-8` or `azure-moonshotai-foundry/Kimi-K2.7-Code`, so deploy models under their default names. A key without an endpoint keeps the models listed; requests then fail with a message naming the missing variable.
+
 ### Amazon Bedrock
 
 Bedrock can use a bearer token or an ambient AWS credential source:

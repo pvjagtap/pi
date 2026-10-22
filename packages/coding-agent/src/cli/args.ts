@@ -426,6 +426,12 @@ ${chalk.bold("Environment Variables:")}
   AZURE_OPENAI_RESOURCE_NAME       - Azure OpenAI resource name (alternative to base URL)
   AZURE_OPENAI_API_VERSION         - Azure OpenAI API version (default: v1)
   AZURE_OPENAI_DEPLOYMENT_NAME_MAP - Azure OpenAI model=deployment map (comma-separated)
+  ANTHROPIC_FOUNDRY_API_KEY        - Azure AI Foundry key for Anthropic Claude
+  ANTHROPIC_FOUNDRY_RESOURCE       - Azure AI Foundry resource name for Claude
+  ANTHROPIC_FOUNDRY_BASE_URL       - Azure AI Foundry Claude endpoint (alternative to resource)
+  KIMI_FOUNDRY_API_KEY             - Azure AI Foundry key for Moonshot Kimi
+  KIMI_FOUNDRY_RESOURCE            - Azure AI Foundry resource name for Kimi
+  KIMI_FOUNDRY_BASE_URL            - Azure AI Foundry Kimi endpoint (alternative to resource)
   DEEPSEEK_API_KEY                 - DeepSeek API key
   NVIDIA_API_KEY                   - NVIDIA NIM API key
   GEMINI_API_KEY                   - Google Gemini API key
