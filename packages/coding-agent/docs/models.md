@@ -202,6 +202,18 @@ for (const block of result.output) if (block.type === "image") image(block);
 
 Extensions generate images through `ctx.modelRegistry.generateImages()`, without codemode.
 
+## Limit providers
+
+Set `enabledProviders` in `models.json` to keep only some providers. Every other provider is removed: built-in, `models.json`, and extension providers. Their models do not appear in `/model`, `pi --list-models`, or model cycling, they cannot be selected with `--model`, and `/login` does not list them. A stored credential does not bring a provider back.
+
+```json
+{
+  "enabledProviders": ["azure", "azure-anthropic-foundry", "azure-moonshotai-foundry", "github-copilot"]
+}
+```
+
+`PI_ENABLED_PROVIDERS` overrides the list for one process, for example `PI_ENABLED_PROVIDERS=github-copilot pi`. Without either, every provider is enabled. When the saved default model belongs to a removed provider, Pi starts with a model from an enabled provider.
+
 ## Add a custom provider
 
 Use an extension when the provider needs custom streaming, model discovery, or authentication behavior. See [Custom Providers](custom-provider.md) for the extension workflow.

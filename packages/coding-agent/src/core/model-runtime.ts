@@ -181,6 +181,8 @@ export class ModelRuntime implements Models {
 	/** Virtual models by provider id, then model id. */
 	private readonly virtualModels = new Map<string, Map<string, RegisteredVirtualModel>>();
 	private readonly compositionErrors = new Map<string, string>();
+	/** `PI_ENABLED_PROVIDERS` allowlist; overrides `enabledProviders` in models.json. */
+	private readonly enabledProvidersOverride: ReadonlySet<string> | undefined;
 	private readonly modelsPath: string | undefined;
 	private readonly modelNetworkEnabled: boolean;
 	private config: ModelConfig;
@@ -204,11 +206,13 @@ export class ModelRuntime implements Models {
 		modelsStore: ModelsStore,
 		providers: readonly Provider[],
 		modelNetworkEnabled: boolean,
+		enabledProvidersOverride: ReadonlySet<string> | undefined,
 	) {
 		this.credentials = credentials;
 		this.config = config;
 		this.modelsPath = modelsPath;
 		this.modelNetworkEnabled = modelNetworkEnabled;
+		this.enabledProvidersOverride = enabledProvidersOverride;
 		this.defaultBuiltins = new Map(providers.map((provider) => [provider.id, provider]));
 		for (const [providerId, provider] of this.defaultBuiltins) this.builtins.set(providerId, provider);
 		this.models = createModels({ credentials, modelsStore });
@@ -239,6 +243,9 @@ export class ModelRuntime implements Models {
 			}
 			return withRemoteCatalog(provider, options.catalogBaseUrl, builtinModelDataGeneratedAt);
 		});
+		const enabledProvidersEnv = process.env.PI_ENABLED_PROVIDERS?.split(",")
+			.map((providerId) => providerId.trim())
+			.filter((providerId) => providerId.length > 0);
 		const runtime = new ModelRuntime(
 			credentials,
 			config,
@@ -246,6 +253,7 @@ export class ModelRuntime implements Models {
 			modelsStore,
 			providers,
 			process.env.PI_OFFLINE === undefined,
+			enabledProvidersEnv?.length ? new Set(enabledProvidersEnv) : undefined,
 		);
 		runtime.configureRadiusProviders();
 		runtime.rebuildProviders();
@@ -297,6 +305,12 @@ export class ModelRuntime implements Models {
 
 	/** Returns the provider without virtual models, or undefined when only virtual models define it. */
 	private recomposeProvider(providerId: string): Provider | undefined {
+		// A provider outside the allowlist is removed from every surface: listing, selection, and login.
+		const enabledProviders = this.enabledProvidersOverride ?? this.config.getEnabledProviders();
+		if (enabledProviders && !enabledProviders.has(providerId)) {
+			this.models.deleteProvider(providerId);
+			return undefined;
+		}
 		const provider = this.composeProvider(providerId);
 		const virtualModels = [...(this.virtualModels.get(providerId)?.values() ?? [])].map((entry) => entry.model);
 		if (virtualModels.length > 0) this.models.setProvider(withVirtualModels(providerId, provider, virtualModels));

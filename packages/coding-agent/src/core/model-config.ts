@@ -115,7 +115,13 @@ const ProviderConfigSchema = Type.Object({
 });
 
 const ModelsConfigProperties = {
-	providers: Type.Record(Type.String(), ProviderConfigSchema),
+	providers: Type.Optional(Type.Record(Type.String(), ProviderConfigSchema)),
+	enabledProviders: Type.Optional(
+		Type.Array(Type.String({ minLength: 1 }), {
+			description:
+				"Provider IDs to keep. When set, every other provider (built-in, models.json, and extension) is removed: its models are not listed and cannot be selected or logged in to. PI_ENABLED_PROVIDERS overrides this list.",
+		}),
+	),
 };
 
 export const ModelsConfigSchema = Type.Object({
@@ -158,11 +164,17 @@ function deepFreeze<T>(value: T): T {
 /** One immutable load of models.json. */
 export class ModelConfig {
 	private readonly providers: ReadonlyMap<string, ModelsJsonProvider>;
+	private readonly enabledProviders: ReadonlySet<string> | undefined;
 	private readonly error: string | undefined;
 
-	private constructor(providers: ReadonlyMap<string, ModelsJsonProvider>, error?: string) {
+	private constructor(
+		providers: ReadonlyMap<string, ModelsJsonProvider>,
+		error?: string,
+		enabledProviders?: ReadonlySet<string>,
+	) {
 		this.providers = providers;
 		this.error = error;
+		this.enabledProviders = enabledProviders;
 	}
 
 	static async load(modelsJsonPath: string | undefined): Promise<ModelConfig> {
@@ -199,10 +211,14 @@ export class ModelConfig {
 		}
 
 		const providers = new Map<string, ModelsJsonProvider>();
-		for (const [providerId, provider] of Object.entries(parsed.providers)) {
+		for (const [providerId, provider] of Object.entries(parsed.providers ?? {})) {
 			providers.set(providerId, deepFreeze(structuredClone(provider)));
 		}
-		return new ModelConfig(providers);
+		return new ModelConfig(
+			providers,
+			undefined,
+			parsed.enabledProviders ? new Set(parsed.enabledProviders) : undefined,
+		);
 	}
 
 	getProvider(providerId: string): ModelsJsonProvider | undefined {
@@ -211,6 +227,11 @@ export class ModelConfig {
 
 	getProviderIds(): readonly string[] {
 		return [...this.providers.keys()];
+	}
+
+	/** Provider allowlist from `enabledProviders`; undefined when every provider is enabled. */
+	getEnabledProviders(): ReadonlySet<string> | undefined {
+		return this.enabledProviders;
 	}
 
 	getError(): string | undefined {
