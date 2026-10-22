@@ -5,6 +5,7 @@ import type { Api, Context, Model, StreamOptions } from "../src/types.ts";
 type StreamOptionsWithExtras = StreamOptions & Record<string, unknown>;
 
 import {
+	azureAnthropicFoundryModel,
 	hasAzureAnthropicFoundryCredentials,
 	hasAzureOpenAICredentials,
 	resolveAzureDeploymentName,
@@ -170,7 +171,7 @@ describe("AI Providers Abort Tests", () => {
 	});
 
 	describe.skipIf(!hasAzureAnthropicFoundryCredentials())("Azure AI Foundry Anthropic Provider Abort", () => {
-		const llm = getModel("azure-anthropic-foundry", "claude-haiku-4-5");
+		const llm = azureAnthropicFoundryModel();
 		const options = { thinkingEnabled: true, thinkingBudgetTokens: 2048 } satisfies StreamOptionsWithExtras;
 
 		it("should abort mid-stream", { retry: 3 }, async () => {

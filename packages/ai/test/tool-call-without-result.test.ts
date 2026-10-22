@@ -6,6 +6,7 @@ import type { Api, Context, Model, StreamOptions, Tool } from "../src/types.ts";
 type StreamOptionsWithExtras = StreamOptions & Record<string, unknown>;
 
 import {
+	azureAnthropicFoundryModel,
 	hasAzureAnthropicFoundryCredentials,
 	hasAzureOpenAICredentials,
 	resolveAzureDeploymentName,
@@ -147,7 +148,7 @@ describe("Tool Call Without Result Tests", () => {
 	});
 
 	describe.skipIf(!hasAzureAnthropicFoundryCredentials())("Azure AI Foundry Anthropic Provider", () => {
-		const model = getModel("azure-anthropic-foundry", "claude-haiku-4-5");
+		const model = azureAnthropicFoundryModel();
 
 		it("should filter out tool calls without corresponding tool results", { retry: 3, timeout: 30000 }, async () => {
 			await testToolCallWithoutResult(model);

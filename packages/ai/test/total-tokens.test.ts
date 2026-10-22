@@ -19,6 +19,7 @@ import type { Api, Context, Model, StreamOptions, Usage } from "../src/types.ts"
 type StreamOptionsWithExtras = StreamOptions & Record<string, unknown>;
 
 import {
+	azureAnthropicFoundryModel,
 	hasAzureAnthropicFoundryCredentials,
 	hasAzureOpenAICredentials,
 	resolveAzureDeploymentName,
@@ -154,10 +155,10 @@ describe("totalTokens field", () => {
 
 	describe.skipIf(!hasAzureAnthropicFoundryCredentials())("Azure AI Foundry Anthropic", () => {
 		it(
-			"claude-haiku-4-5 - should return totalTokens equal to sum of components",
+			"claude-sonnet-5 - should return totalTokens equal to sum of components",
 			{ retry: 3, timeout: 60000 },
 			async () => {
-				const llm = getModel("azure-anthropic-foundry", "claude-haiku-4-5");
+				const llm = azureAnthropicFoundryModel();
 
 				console.log(`\nAzure AI Foundry Anthropic / ${llm.id}:`);
 				const { first, second } = await testTotalTokensWithCache(llm);

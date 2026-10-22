@@ -5,6 +5,7 @@ import type { Api, AssistantMessage, Context, Model, StreamOptions, UserMessage 
 type StreamOptionsWithExtras = StreamOptions & Record<string, unknown>;
 
 import {
+	azureAnthropicFoundryModel,
 	hasAzureAnthropicFoundryCredentials,
 	hasAzureOpenAICredentials,
 	resolveAzureDeploymentName,
@@ -251,7 +252,7 @@ describe("AI Providers Empty Message Tests", () => {
 	});
 
 	describe.skipIf(!hasAzureAnthropicFoundryCredentials())("Azure AI Foundry Anthropic Provider Empty Messages", () => {
-		const llm = getModel("azure-anthropic-foundry", "claude-haiku-4-5");
+		const llm = azureAnthropicFoundryModel();
 
 		it("should handle empty content array", { retry: 3, timeout: 30000 }, async () => {
 			await testEmptyMessage(llm);

@@ -17,7 +17,11 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { complete, getModel, getModels } from "../src/compat.ts";
 import type { AssistantMessage, Context, Model, Usage } from "../src/types.ts";
 import { isContextOverflow } from "../src/utils/overflow.ts";
-import { hasAzureAnthropicFoundryCredentials, hasAzureOpenAICredentials } from "./azure-utils.ts";
+import {
+	azureAnthropicFoundryModel,
+	hasAzureAnthropicFoundryCredentials,
+	hasAzureOpenAICredentials,
+} from "./azure-utils.ts";
 import { hasBedrockCredentials } from "./bedrock-utils.ts";
 import { resolveApiKey } from "./oauth.ts";
 
@@ -106,8 +110,8 @@ describe("Context overflow error handling", () => {
 	});
 
 	describe.skipIf(!hasAzureAnthropicFoundryCredentials())("Azure AI Foundry Anthropic", () => {
-		it("claude-haiku-4-5 - should detect overflow via isContextOverflow", async () => {
-			const model = getModel("azure-anthropic-foundry", "claude-haiku-4-5");
+		it("claude-sonnet-5 - should detect overflow via isContextOverflow", async () => {
+			const model = azureAnthropicFoundryModel();
 			const result = await testContextOverflow(model, process.env.ANTHROPIC_FOUNDRY_API_KEY!);
 			logResult(result);
 

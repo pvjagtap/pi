@@ -11,6 +11,8 @@ type StreamOptionsWithExtras = StreamOptions & Record<string, unknown>;
 
 import { StringEnum } from "../src/utils/typebox-helpers.ts";
 import {
+	azureAnthropicFoundryModel,
+	azureMoonshotaiFoundryModel,
 	hasAzureAnthropicFoundryCredentials,
 	hasAzureMoonshotaiFoundryCredentials,
 	hasAzureOpenAICredentials,
@@ -526,7 +528,7 @@ describe("Generate E2E Tests", () => {
 	describe.skipIf(!hasAzureMoonshotaiFoundryCredentials())(
 		"Azure AI Foundry Moonshot Provider (Kimi-K2.7-Code)",
 		() => {
-			const model = getModel("azure-moonshotai-foundry", "Kimi-K2.7-Code");
+			const model = azureMoonshotaiFoundryModel();
 
 			it("should complete basic text generation", { retry: 3 }, async () => {
 				await basicTextGeneration(model);
@@ -543,9 +545,9 @@ describe("Generate E2E Tests", () => {
 	);
 
 	describe.skipIf(!hasAzureAnthropicFoundryCredentials())(
-		"Azure AI Foundry Anthropic Provider (claude-haiku-4-5)",
+		"Azure AI Foundry Anthropic Provider (claude-sonnet-5)",
 		() => {
-			const model = getModel("azure-anthropic-foundry", "claude-haiku-4-5");
+			const model = azureAnthropicFoundryModel();
 
 			it("should complete basic text generation", { retry: 3 }, async () => {
 				await basicTextGeneration(model, { thinkingEnabled: true });

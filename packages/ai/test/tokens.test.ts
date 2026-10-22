@@ -5,6 +5,7 @@ import type { Api, Context, Model, StreamOptions } from "../src/types.ts";
 type StreamOptionsWithExtras = StreamOptions & Record<string, unknown>;
 
 import {
+	azureAnthropicFoundryModel,
 	hasAzureAnthropicFoundryCredentials,
 	hasAzureOpenAICredentials,
 	resolveAzureDeploymentName,
@@ -136,7 +137,7 @@ describe("Token Statistics on Abort", () => {
 	});
 
 	describe.skipIf(!hasAzureAnthropicFoundryCredentials())("Azure AI Foundry Anthropic Provider", () => {
-		const llm = getModel("azure-anthropic-foundry", "claude-haiku-4-5");
+		const llm = azureAnthropicFoundryModel();
 
 		it("should include token stats when aborted mid-stream", { retry: 3, timeout: 30000 }, async () => {
 			await testTokensOnAbort(llm);

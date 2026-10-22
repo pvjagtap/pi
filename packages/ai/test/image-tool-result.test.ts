@@ -9,6 +9,7 @@ import type { StreamOptions } from "../src/types.ts";
 type StreamOptionsWithExtras = StreamOptions & Record<string, unknown>;
 
 import {
+	azureAnthropicFoundryModel,
 	hasAzureAnthropicFoundryCredentials,
 	hasAzureOpenAICredentials,
 	resolveAzureDeploymentName,
@@ -279,9 +280,9 @@ describe("Tool Results with Images", () => {
 	});
 
 	describe.skipIf(!hasAzureAnthropicFoundryCredentials())(
-		"Azure AI Foundry Anthropic Provider (claude-haiku-4-5)",
+		"Azure AI Foundry Anthropic Provider (claude-sonnet-5)",
 		() => {
-			const model = getModel("azure-anthropic-foundry", "claude-haiku-4-5");
+			const model = azureAnthropicFoundryModel();
 
 			it("should handle tool result with only image", { retry: 3, timeout: 30000 }, async () => {
 				await handleToolWithImageResult(model);
