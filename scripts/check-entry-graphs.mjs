@@ -150,7 +150,8 @@ for (const [pkgDir, budgets] of Object.entries(BUDGETS)) {
 				failures += 1;
 				continue;
 			}
-			const graph = [...walk(source)].map((file) => relative(ROOT, file));
+			// Normalize to "/" so forbid/allow patterns also match on Windows.
+			const graph = [...walk(source)].map((file) => relative(ROOT, file).replaceAll("\\", "/"));
 			if (graph.length > budget.maxFiles) {
 				console.error(
 					`${pkgDir} export "${name}" reaches ${graph.length} files, budget ${budget.maxFiles}\n` +
