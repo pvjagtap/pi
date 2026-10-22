@@ -3,6 +3,7 @@ import { stream } from "../src/api/openai-completions.ts";
 import { createModels } from "../src/models.ts";
 import { builtinProviders } from "../src/providers/all.ts";
 import type { Model } from "../src/types.ts";
+import { normalizeContext } from "../src/utils/transcript.ts";
 
 const ENV_KEYS = ["KIMI_FOUNDRY_API_KEY", "KIMI_FOUNDRY_BASE_URL", "KIMI_FOUNDRY_RESOURCE"] as const;
 const original = new Map<string, string | undefined>();
@@ -90,7 +91,7 @@ describe("azure-moonshotai-foundry", () => {
 
 		const events = stream(
 			{ ...model, baseUrl: "https://my-resource.services.ai.azure.com/openai/v1/" },
-			{ messages: [{ role: "user", content: "hi", timestamp: 0 }] },
+			normalizeContext({ messages: [{ role: "user", content: "hi", timestamp: 0 }] }),
 			{ apiKey: "test-key", fetch, maxRetries: 0 },
 		);
 		for await (const _event of events) {
